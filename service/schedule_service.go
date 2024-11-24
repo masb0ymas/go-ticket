@@ -20,13 +20,17 @@ func NewScheduleService(repo *repository.ScheduleRepository) *ScheduleService {
 }
 
 type CreateScheduleRequest struct {
-	StartDate time.Time `json:"start_date" validate:"required"`
-	EndDate   time.Time `json:"end_date" validate:"required,gtfield=StartDate"`
+	Title       string    `json:"title" validate:"required"`
+	Description string    `json:"description"`
+	StartDate   time.Time `json:"start_date" validate:"required"`
+	EndDate     time.Time `json:"end_date" validate:"required,gtfield=StartDate"`
 }
 
 type UpdateScheduleRequest struct {
-	StartDate time.Time `json:"start_date" validate:"required"`
-	EndDate   time.Time `json:"end_date" validate:"required,gtfield=StartDate"`
+	Title       string    `json:"title" validate:"required"`
+	Description string    `json:"description"`
+	StartDate   time.Time `json:"start_date" validate:"required"`
+	EndDate     time.Time `json:"end_date" validate:"required,gtfield=StartDate"`
 }
 
 type SearchScheduleRequest struct {
@@ -51,8 +55,15 @@ func (s *ScheduleService) GetScheduleById(id uuid.UUID) (*models.Schedule, error
 
 func (s *ScheduleService) CreateSchedule(req *CreateScheduleRequest) (*models.Schedule, error) {
 	schedule := &models.Schedule{
-		StartDate: req.StartDate,
-		EndDate:   req.EndDate,
+		BaseModel: models.BaseModel{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
+		Title:       req.Title,
+		Description: req.Description,
+		StartDate:   req.StartDate,
+		EndDate:     req.EndDate,
 	}
 
 	err := s.repo.Create(schedule)
@@ -69,6 +80,8 @@ func (s *ScheduleService) UpdateSchedule(id uuid.UUID, req *UpdateScheduleReques
 		return nil, err
 	}
 
+	schedule.Title = req.Title
+	schedule.Description = req.Description
 	schedule.StartDate = req.StartDate
 	schedule.EndDate = req.EndDate
 
