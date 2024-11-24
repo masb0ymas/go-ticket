@@ -44,7 +44,7 @@ func (r *EventRepository) FindWithRelations(id uuid.UUID) (*models.Event, error)
 			&location.ID, &location.Name, &location.Address, &location.City,
 			&location.State, &location.Country, &location.PostalCode,
 			&location.CreatedAt, &location.UpdatedAt, &location.DeletedAt,
-			&schedule.ID, &schedule.StartDate, &schedule.EndDate,
+			&schedule.ID, &schedule.Title, &schedule.Description, &schedule.StartDate, &schedule.EndDate,
 			&schedule.CreatedAt, &schedule.UpdatedAt, &schedule.DeletedAt,
 		)
 		if err != nil {
@@ -86,7 +86,7 @@ func (r *EventRepository) FindAllWithRelations() ([]models.Event, error) {
 			&location.ID, &location.Name, &location.Address, &location.City,
 			&location.State, &location.Country, &location.PostalCode,
 			&location.CreatedAt, &location.UpdatedAt, &location.DeletedAt,
-			&schedule.ID, &schedule.StartDate, &schedule.EndDate,
+			&schedule.ID, &schedule.Title, &schedule.Description, &schedule.StartDate, &schedule.EndDate,
 			&schedule.CreatedAt, &schedule.UpdatedAt, &schedule.DeletedAt,
 		)
 		if err != nil {
@@ -99,4 +99,47 @@ func (r *EventRepository) FindAllWithRelations() ([]models.Event, error) {
 	}
 
 	return events, nil
+}
+
+func (r *EventRepository) Create(event *models.Event) error {
+	query := `
+		INSERT INTO events (
+			id, name, description, location_id, schedule_id,
+			created_at, updated_at
+		) VALUES (
+			:id, :name, :description, :location_id, :schedule_id,
+			:created_at, :updated_at
+		)
+	`
+	_, err := r.db.NamedExec(query, map[string]interface{}{
+		"id":          event.ID,
+		"name":        event.Name,
+		"description": event.Description,
+		"location_id": event.LocationID,
+		"schedule_id": event.ScheduleID,
+		"created_at":  event.CreatedAt,
+		"updated_at":  event.UpdatedAt,
+	})
+	return err
+}
+
+func (r *EventRepository) Update(event *models.Event) error {
+	query := `
+		UPDATE events SET
+			name = :name,
+			description = :description,
+			location_id = :location_id,
+			schedule_id = :schedule_id,
+			updated_at = :updated_at
+		WHERE id = :id AND deleted_at IS NULL
+	`
+	_, err := r.db.NamedExec(query, map[string]interface{}{
+		"id":          event.ID,
+		"name":        event.Name,
+		"description": event.Description,
+		"location_id": event.LocationID,
+		"schedule_id": event.ScheduleID,
+		"updated_at":  event.UpdatedAt,
+	})
+	return err
 }

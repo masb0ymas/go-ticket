@@ -4,6 +4,7 @@ import (
 	"errors"
 	"go-ticket/models"
 	"go-ticket/repository"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -49,6 +50,11 @@ func (s *EventService) GetEventById(id uuid.UUID) (*models.Event, error) {
 
 func (s *EventService) CreateEvent(req *CreateEventRequest) (*models.Event, error) {
 	event := &models.Event{
+		BaseModel: models.BaseModel{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
 		Name:        req.Name,
 		Description: req.Description,
 		LocationID:  req.LocationID,
@@ -74,7 +80,7 @@ func (s *EventService) UpdateEvent(id uuid.UUID, req *UpdateEventRequest) (*mode
 	event.LocationID = req.LocationID
 	event.ScheduleID = req.ScheduleID
 
-	err = s.repo.Update(id, event)
+	err = s.repo.Update(event)
 	if err != nil {
 		return nil, err
 	}
