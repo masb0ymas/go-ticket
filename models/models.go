@@ -62,15 +62,17 @@ type TicketType struct {
 
 type Transaction struct {
 	BaseModel
-	UserID        uuid.UUID           `db:"user_id" json:"user_id"`
-	EventID       uuid.UUID           `db:"event_id" json:"event_id"`
-	TotalAmount   float64             `db:"total_amount" json:"total_amount"`
-	Status        string              `db:"status" json:"status"`
-	PaymentMethod string              `db:"payment_method" json:"payment_method"`
-	PaymentStatus string              `db:"payment_status" json:"payment_status"`
-	User          *User               `db:"-" json:"user,omitempty"`
-	Event         *Event              `db:"-" json:"event,omitempty"`
-	Details       []TransactionDetail `db:"-" json:"details,omitempty"`
+	UserID          uuid.UUID           `db:"user_id" json:"user_id"`
+	EventID         uuid.UUID           `db:"event_id" json:"event_id"`
+	TotalAmount     float64             `db:"total_amount" json:"total_amount"`
+	Status          string              `db:"status" json:"status"`
+	PaymentMethod   string              `db:"payment_method" json:"payment_method"`
+	PaymentStatus   string              `db:"payment_status" json:"payment_status"`
+	PaymentUrl      string              `db:"payment_url" json:"payment_url"`
+	PaymentCallback *string             `db:"payment_callback" json:"payment_callback"`
+	User            *User               `db:"-" json:"user,omitempty"`
+	Event           *Event              `db:"-" json:"event,omitempty"`
+	Details         []TransactionDetail `db:"-" json:"details,omitempty"`
 }
 
 type TransactionDetail struct {
