@@ -102,7 +102,7 @@ func (s *TicketTypeService) UpdateTicketType(id uuid.UUID, req *UpdateTicketType
 
 	ticketType.UpdatedAt = time.Now()
 
-	err = s.repo.Update(id, ticketType)
+	err = s.repo.Update(ticketType)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (s *TicketTypeService) DeleteTicketType(id uuid.UUID) error {
 	}
 
 	ticketType.DeletedAt = &time.Time{}
-	return s.repo.Update(id, ticketType)
+	return s.repo.Update(ticketType)
 }
 
 func (s *TicketTypeService) UpdateQuota(id uuid.UUID, quantity int) error {

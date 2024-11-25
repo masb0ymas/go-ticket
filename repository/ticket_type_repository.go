@@ -119,3 +119,46 @@ func (r *TicketTypeRepository) UpdateQuota(id uuid.UUID, quantity int) error {
 
 	return nil
 }
+
+func (r *TicketTypeRepository) Create(ticketType *models.TicketType) error {
+	query := `
+		INSERT INTO ticket_types (
+			event_id, name, description, price, quota, remaining_quota
+		) VALUES (
+			:event_id, :name, :description, :price, :quota, :remaining_quota
+		)
+	`
+	_, err := r.db.NamedExec(query, map[string]interface{}{
+		"event_id":        ticketType.EventID,
+		"name":            ticketType.Name,
+		"description":     ticketType.Description,
+		"price":           ticketType.Price,
+		"quota":           ticketType.Quota,
+		"remaining_quota": ticketType.RemainingQuota,
+	})
+	return err
+}
+
+func (r *TicketTypeRepository) Update(ticketType *models.TicketType) error {
+	query := `
+		UPDATE ticket_types SET
+			name = :name,
+			description = :description,
+			price = :price,
+			quota = :quota,
+			remaining_quota = :remaining_quota,
+			updated_at = :updated_at
+		WHERE id = :id AND deleted_at IS NULL
+	`
+	_, err := r.db.NamedExec(query, map[string]interface{}{
+		"id":              ticketType.ID,
+		"event_id":        ticketType.EventID,
+		"name":            ticketType.Name,
+		"description":     ticketType.Description,
+		"price":           ticketType.Price,
+		"quota":           ticketType.Quota,
+		"remaining_quota": ticketType.RemainingQuota,
+		"updated_at":      ticketType.UpdatedAt,
+	})
+	return err
+}
