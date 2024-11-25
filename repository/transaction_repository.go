@@ -9,11 +9,13 @@ import (
 
 type TransactionRepository struct {
 	*Repository[models.Transaction]
+	db *sqlx.DB
 }
 
 func NewTransactionRepository(db *sqlx.DB) *TransactionRepository {
 	return &TransactionRepository{
 		Repository: NewRepository[models.Transaction](db, "transactions"),
+		db:         db,
 	}
 }
 
@@ -38,11 +40,10 @@ func (r *TransactionRepository) FindByUserId(userId uuid.UUID) ([]models.Transac
 		var transaction models.Transaction
 		var user models.User
 		err := rows.Scan(
-			&transaction.ID, &transaction.UserID, &transaction.Status,
-			&transaction.TotalAmount, &transaction.PaymentMethod,
-			&transaction.PaymentStatus, &transaction.CreatedAt,
-			&transaction.UpdatedAt, &transaction.DeletedAt,
-			&user.ID, &user.Fullname, &user.Email, &user.Phone,
+			&transaction.ID, &transaction.UserID, &transaction.EventID, &transaction.TotalAmount, &transaction.Status,
+			&transaction.PaymentMethod, &transaction.PaymentStatus, &transaction.PaymentUrl, &transaction.PaymentCallback,
+			&transaction.CreatedAt, &transaction.UpdatedAt, &transaction.DeletedAt,
+			&user.ID, &user.Fullname, &user.Email, &user.Phone, &user.Password,
 			&user.CreatedAt, &user.UpdatedAt, &user.DeletedAt,
 		)
 		if err != nil {
@@ -82,11 +83,10 @@ func (r *TransactionRepository) FindWithDetails(id uuid.UUID) (*models.Transacti
 		if transaction == nil {
 			transaction = &models.Transaction{}
 			err := rows.Scan(
-				&transaction.ID, &transaction.UserID, &transaction.Status,
-				&transaction.TotalAmount, &transaction.PaymentMethod,
-				&transaction.PaymentStatus, &transaction.CreatedAt,
-				&transaction.UpdatedAt, &transaction.DeletedAt,
-				&user.ID, &user.Fullname, &user.Email, &user.Phone,
+				&transaction.ID, &transaction.UserID, &transaction.EventID, &transaction.TotalAmount, &transaction.Status,
+				&transaction.PaymentMethod, &transaction.PaymentStatus, &transaction.PaymentUrl, &transaction.PaymentCallback,
+				&transaction.CreatedAt, &transaction.UpdatedAt, &transaction.DeletedAt,
+				&user.ID, &user.Fullname, &user.Email, &user.Phone, &user.Password,
 				&user.CreatedAt, &user.UpdatedAt, &user.DeletedAt,
 				&detail.ID, &detail.TransactionID, &detail.TicketTypeID,
 				&detail.Quantity, &detail.PricePerTicket, &detail.Subtotal,
@@ -116,12 +116,9 @@ func (r *TransactionRepository) FindWithDetails(id uuid.UUID) (*models.Transacti
 func (r *TransactionRepository) UpdateStatus(id uuid.UUID, status string) error {
 	query := `
 		UPDATE transactions 
-		SET status = $1, 
-			updated_at = NOW()
-		WHERE id = $2 
-		AND deleted_at IS NULL
+		SET status = $1, updated_at = NOW()
+		WHERE id = $2 AND deleted_at IS NULL
 	`
-
 	_, err := r.db.Exec(query, status, id)
 	return err
 }
@@ -129,12 +126,64 @@ func (r *TransactionRepository) UpdateStatus(id uuid.UUID, status string) error 
 func (r *TransactionRepository) UpdatePaymentStatus(id uuid.UUID, status string) error {
 	query := `
 		UPDATE transactions 
-		SET payment_status = $1, 
-			updated_at = NOW()
-		WHERE id = $2 
-		AND deleted_at IS NULL
+		SET payment_status = $1, updated_at = NOW()
+		WHERE id = $2 AND deleted_at IS NULL
 	`
-
 	_, err := r.db.Exec(query, status, id)
+	return err
+}
+
+func (r *TransactionRepository) Create(transaction *models.Transaction) error {
+	query := `
+		INSERT INTO transactions (
+			id, user_id, event_id, total_amount,
+			status, payment_method, payment_status,
+			payment_url, payment_callback,
+			created_at, updated_at
+		) VALUES (
+			:id, :user_id, :event_id, :total_amount,
+			:status, :payment_method, :payment_status,
+			:payment_url, :payment_callback,
+			:created_at, :updated_at
+		)
+	`
+	_, err := r.db.NamedExec(query, map[string]interface{}{
+		"id":               transaction.ID,
+		"user_id":          transaction.UserID,
+		"event_id":         transaction.EventID,
+		"total_amount":     transaction.TotalAmount,
+		"status":           transaction.Status,
+		"payment_method":   transaction.PaymentMethod,
+		"payment_status":   transaction.PaymentStatus,
+		"payment_url":      transaction.PaymentUrl,
+		"payment_callback": transaction.PaymentCallback,
+		"created_at":       transaction.CreatedAt,
+		"updated_at":       transaction.UpdatedAt,
+	})
+	return err
+}
+
+func (r *TransactionRepository) Update(transaction *models.Transaction) error {
+	query := `
+		UPDATE transactions SET
+			total_amount = :total_amount,
+			status = :status,
+			payment_method = :payment_method,
+			payment_status = :payment_status,
+			payment_url = :payment_url,
+			payment_callback = :payment_callback,
+			updated_at = :updated_at
+		WHERE id = :id AND deleted_at IS NULL
+	`
+	_, err := r.db.NamedExec(query, map[string]interface{}{
+		"id":               transaction.ID,
+		"total_amount":     transaction.TotalAmount,
+		"status":           transaction.Status,
+		"payment_method":   transaction.PaymentMethod,
+		"payment_status":   transaction.PaymentStatus,
+		"payment_url":      transaction.PaymentUrl,
+		"payment_callback": transaction.PaymentCallback,
+		"updated_at":       transaction.UpdatedAt,
+	})
 	return err
 }

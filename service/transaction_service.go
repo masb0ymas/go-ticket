@@ -34,7 +34,9 @@ type TransactionDetailRequest struct {
 
 type CreateTransactionRequest struct {
 	UserID        uuid.UUID                  `json:"user_id" validate:"required"`
+	EventID       uuid.UUID                  `json:"event_id" validate:"required"`
 	PaymentMethod string                     `json:"payment_method" validate:"required"`
+	PaymentUrl    string                     `json:"payment_url" validate:"required"`
 	Details       []TransactionDetailRequest `json:"details" validate:"required,min=1"`
 }
 
@@ -97,10 +99,12 @@ func (s *TransactionService) CreateTransaction(req *CreateTransactionRequest) (*
 			UpdatedAt: time.Now(),
 		},
 		UserID:        req.UserID,
+		EventID:       req.EventID,
 		Status:        "pending",
 		TotalAmount:   totalAmount,
 		PaymentMethod: req.PaymentMethod,
 		PaymentStatus: "pending",
+		PaymentUrl:    req.PaymentUrl,
 	}
 
 	err := s.repo.Create(transaction)

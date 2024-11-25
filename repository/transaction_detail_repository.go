@@ -59,11 +59,11 @@ func (r *TransactionDetailRepository) BulkCreate(details []models.TransactionDet
 	query := `
 		INSERT INTO transaction_details (
 			id, transaction_id, ticket_type_id,
-			quantity, unit_price, sub_total,
+			quantity, price_per_ticket, subtotal,
 			created_at, updated_at
 		) VALUES (
 			:id, :transaction_id, :ticket_type_id,
-			:quantity, :unit_price, :sub_total,
+			:quantity, :price_per_ticket, :subtotal,
 			:created_at, :updated_at
 		)
 	`
