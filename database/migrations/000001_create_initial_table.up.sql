@@ -74,6 +74,10 @@ CREATE TABLE transactions (
     event_id UUID NOT NULL REFERENCES events(id),
     total_amount DECIMAL(10,2) NOT NULL,
     status VARCHAR(50) NOT NULL,
+    payment_method VARCHAR(50) NOT NULL,
+    payment_status VARCHAR(50) NOT NULL,
+    payment_url TEXT,
+    payment_callback TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP WITH TIME ZONE
